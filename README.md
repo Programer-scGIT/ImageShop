@@ -42,9 +42,9 @@ Open <http://127.0.0.1:5000/> in a browser. The Flask development server is inte
 
 ## Publish with GitHub Pages
 
-The editor can also run as a static site; GitHub Pages does not run the Flask server. A GitHub Actions workflow builds the static site from the Flask template whenever changes are pushed to `main` and enables Pages for the repository.
+The editor can also run as a static site; GitHub Pages does not run the Flask server. A GitHub Actions workflow builds and deploys the static site from the Flask template whenever changes are pushed to `main`.
 
-If automatic enablement is unavailable for the repository, open **Settings → Pages** and choose **GitHub Actions** as the build and deployment source. Push to `main` or run the **Deploy ImageShop to GitHub Pages** workflow manually. Once deployment succeeds, the site is available at <https://programer-scgit.github.io/ImageShop/>.
+Before the first deployment, open **Settings → Pages** and choose **GitHub Actions** as the build and deployment source. The workflow token cannot enable Pages for this repository automatically. Then push to `main` or run the **Deploy ImageShop to GitHub Pages** workflow manually. Once deployment succeeds, the site is available at <https://programer-scgit.github.io/ImageShop/>.
 
 ## Project layout
 
