@@ -40,6 +40,12 @@ python app.py
 
 Open <http://127.0.0.1:5000/> in a browser. The Flask development server is intended for local development, not public production hosting.
 
+## Publish with GitHub Pages
+
+The editor can also run as a static site; GitHub Pages does not run the Flask server. A GitHub Actions workflow builds the static site from the Flask template whenever changes are pushed to `main`.
+
+To enable deployment, open the repository's **Settings → Pages**, choose **GitHub Actions** as the build and deployment source, then push to `main` or run the **Deploy ImageShop to GitHub Pages** workflow manually. Once the first deployment succeeds, the site is available at <https://programer-scgit.github.io/ImageShop/>.
+
 ## Project layout
 
 - `app.py` — Flask application and routes.
@@ -47,6 +53,7 @@ Open <http://127.0.0.1:5000/> in a browser. The Flask development server is inte
 - `static/css/` — interface styles.
 - `static/js/` — editor, canvas tools, layers, settings, and file handling.
 - `static/imageshop-icon.svg` — application icon.
+- `.github/workflows/pages.yml` — automated GitHub Pages deployment.
 
 ## Notes
 
