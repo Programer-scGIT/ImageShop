@@ -24,6 +24,8 @@ jobs:
         run: python3 .github/scripts/build_pages.py "$RUNNER_TEMP/imageshop-pages"
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
