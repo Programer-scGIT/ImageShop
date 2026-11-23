@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ImageShop</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='imageshop-icon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="topbar">
+      <button class="brand" id="brandButton" title="О программе"><img class="brand-mark" src="{{ url_for('static', filename='imageshop-icon.svg') }}" alt=""><strong>ImageShop</strong></button>
+      <nav class="menus" id="menus" aria-label="Главное меню">
+        <div class="menu"><button>Файл</button><div class="menu-popover">
+          <button data-action="new">Новый документ <kbd>Ctrl N</kbd></button>
+          <button data-action="open">Открыть изображение <kbd>Ctrl O</kbd></button>
+          <button data-action="openProject">Открыть проект .ishp</button>
+          <hr><button data-action="saveProject">Сохранить проект <kbd>Ctrl S</kbd></button>
+          <button data-action="export">Экспорт <kbd>Ctrl E</kbd></button>
+        </div></div>
+        <div class="menu"><button>Правка</button><div class="menu-popover">
+          <button data-action="undo">Отменить <kbd>Ctrl Z</kbd></button>
+          <button data-action="redo">Повторить <kbd>Ctrl Shift Z</kbd></button>
+          <hr><button data-action="clearLayer">Очистить слой</button>
+        </div></div>
+        <div class="menu"><button>Вид</button><div class="menu-popover">
+          <button data-action="fit">Вписать холст <kbd>0</kbd></button>
+          <button data-action="center">Центрировать</button>
+          <button data-action="zoomIn">Увеличить <kbd>+</kbd></button>
+          <button data-action="zoomOut">Уменьшить <kbd>-</kbd></button>
+        </div></div>
+        <div class="menu"><button>Слой</button><div class="menu-popover">
+          <button data-action="addLayer">Новый слой <kbd>Ctrl Shift N</kbd></button>
+          <button data-action="duplicateLayer">Дублировать</button>
+          <button data-action="mergeDown">Объединить вниз</button>
+          <button data-action="deleteLayer">Удалить слой</button>
+        </div></div>
+      </nav>
+      <div class="top-actions">
+        <button class="icon-button" data-action="undo" title="Отменить">↶</button>
+        <button class="icon-button" data-action="redo" title="Повторить">↷</button>
+        <button class="icon-button" data-action="export" title="Экспорт">⇩</button>
+        <button class="icon-button" id="themeButton" title="Настройки интерфейса">⚙</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="left-panel panel" id="leftPanel">
+        <div class="tools" id="tools"></div>
+      </aside>
+      <section class="stage-wrap" id="stageWrap">
+        <div class="stage" id="stage">
+          <div class="canvas-shell" id="canvasShell">
+            <canvas id="documentCanvas"></canvas>
+            <canvas id="overlayCanvas"></canvas>
+          </div>
+          <div class="brush-cursor" id="brushCursor" aria-hidden="true"></div>
+        </div>
+      </section>
+      <aside class="right-panel panel" id="rightPanel">
+        <div class="panel-tabs"><button class="active" data-tab="properties">Свойства</button><button data-tab="layers">Слои</button></div>
+        <section class="tab-panel active" id="propertiesPanel">
+          <div class="property-section selection-controls" id="selectionControls" hidden>
+            <h3>Трансформация выделения</h3>
+            <div class="selection-actions">
+              <button type="button" data-selection-action="flipHorizontal">↔ Отразить</button>
+              <button type="button" data-selection-action="flipVertical">↕ Отразить</button>
+              <button type="button" data-selection-action="rotateLeft">↶ 90°</button>
+              <button type="button" data-selection-action="rotateRight">↷ 90°</button>
+              <button type="button" data-selection-action="deselect">Снять выделение</button>
+            </div>
+          </div>
+          <div class="property-section gradient-options" id="gradientOptions" hidden>
+            <h3 data-i18n="Градиент">Градиент</h3>
+            <label><span data-i18n="Тип">Тип</span>
+              <select id="gradientType">
+                <option value="linear">Линейный</option>
+                <option value="radial">Радиальный</option>
+              </select>
+            </label>
+          </div>
+          <div class="property-section">
+            <h3>Инструмент</h3>
+            <label>Размер <output id="sizeValue">16 px</output><input id="brushSize" type="range" min="1" max="200" value="16"></label>
+            <label>Прозрачность <output id="opacityValue">100%</output><input id="brushOpacity" type="range" min="1" max="100" value="100"></label>
+            <label>Жёсткость <output id="hardnessValue">100%</output><input id="brushHardness" type="range" min="0" max="100" value="100"></label>
+            <label id="glowIntensityControl" hidden>Свечение <output id="glowIntensityValue">180</output><input id="glowIntensity" type="range" min="1" max="255" value="180"></label>
+            <label class="check-row"><input id="smoothingToggle" type="checkbox" checked> Сглаживание</label>
+          </div>
+          <div class="property-section bucket-options" id="bucketOptions" hidden>
+            <h3>Заливка</h3>
+            <label>Допуск цвета <output id="fillToleranceValue">24</output>
+              <span class="bucket-range">
+                <input id="fillToleranceNumber" type="number" min="0" max="255" value="24" data-bucket-setting="tolerance" aria-label="Допуск цвета">
+                <input id="fillTolerance" type="range" min="0" max="255" value="24" data-bucket-setting="tolerance" aria-label="Ползунок допуска цвета">
+              </span>
+            </label>
+            <label>Расширение <output id="fillGrowValue">2 px</output>
+              <span class="bucket-range">
+                <input id="fillGrowNumber" type="number" min="0" max="10" value="2" data-bucket-setting="grow" aria-label="Расширение области">
+                <input id="fillGrow" type="range" min="0" max="10" value="2" data-bucket-setting="grow" aria-label="Ползунок расширения">
+              </span>
+            </label>
+            <label>Закрытие разрывов
+              <select id="fillGapClosing" data-bucket-setting="gapClosing">
+                <option value="none">Выкл.</option><option value="low" selected>Низкая</option>
+                <option value="medium">Средняя</option><option value="high">Высокая</option>
+              </select>
+            </label>
+            <label class="check-row"><input id="fillAntiAliasing" type="checkbox" checked data-bucket-setting="antiAliasing"> Сглаживание краёв</label>
+            <label class="check-row"><input id="fillContiguous" type="checkbox" checked data-bucket-setting="contiguous"> Только связанная область</label>
+            <label class="check-row"><input id="fillSampleAllLayers" type="checkbox" data-bucket-setting="sampleAllLayers"> Учитывать все видимые слои</label>
+          </div>
+          <div class="property-section">
+            <h3>Цвет</h3>
+            <div class="color-controls">
+              <div class="color-stack"><button id="foregroundColor" class="color-swatch foreground" title="Передний план"></button><button id="backgroundColor" class="color-swatch background" title="Фон"></button></div>
+              <input id="colorPicker" type="color" value="#5b9cf5">
+              <button id="swapColors" title="Поменять цвета">⇄</button>
+            </div>
+            <label class="check-row color-gradient-toggle"><input id="colorGradientEnabled" type="checkbox"> Градиент</label>
+            <div id="colorGradientControls" class="color-gradient-controls" hidden>
+              <label><span>Начальный цвет</span><span class="gradient-color-picker"><span id="colorGradientStartSwatch"></span><input id="colorGradientStart" type="color" value="#5b9cf5"></span></label>
+              <label><span>Конечный цвет</span><span class="gradient-color-picker"><span id="colorGradientEndSwatch"></span><input id="colorGradientEnd" type="color" value="#ffffff"></span></label>
+            </div>
+          </div>
+        </section>
+        <section class="tab-panel" id="layersPanel">
+          <div class="layers-toolbar">
+            <button data-action="addLayer" title="Новый слой">＋</button><button data-action="duplicateLayer" title="Дублировать">⧉</button>
+            <button data-action="mergeDown" title="Объединить вниз">⇩</button><button data-action="deleteLayer" title="Удалить">⌫</button>
+            <button data-action="addLayerMask" title="Добавить маску слоя">▧</button>
+            <button data-action="toggleLayerMask" title="Включить/выключить маску">◉</button>
+            <button data-action="removeLayerMask" title="Удалить маску слоя">×</button>
+          </div>
+          <div class="layer-list" id="layerList"></div>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="statusbar">
+      <div><button id="handToggle" title="Рука">✋</button><span id="toolStatus">Кисть</span></div>
+      <div class="status-center"><span id="documentSize">1200 × 800 px</span><span id="zoomLabel">100%</span></div>
+      <div class="status-right"><button data-action="fit">Вписать</button><input id="zoomSlider" type="range" min="10" max="400" value="100"></div>
+    </footer>
+  </div>
+
+  <dialog id="newDocumentDialog">
+    <form method="dialog" id="newDocumentForm">
+      <h2>Новый документ</h2>
+      <div class="presets" id="sizePresets">
+        <button type="button" data-width="1200" data-height="1200">1:1</button><button type="button" data-width="1600" data-height="1200">4:3</button>
+        <button type="button" data-width="1920" data-height="1080">16:9</button><button type="button" data-width="1500" data-height="1000">3:2</button>
+      </div>
+      <label>Ширина <input id="docWidth" type="number" min="1" max="10000" value="1200"></label>
+      <label>Высота <input id="docHeight" type="number" min="1" max="10000" value="800"></label>
+      <label>DPI <input id="docDpi" type="number" min="72" max="1200" value="72"></label>
+      <label>Фон <select id="docBackground"><option value="transparent">Прозрачный</option><option value="white">Белый</option></select></label>
+      <div class="dialog-actions"><button value="cancel">Отмена</button><button id="createDocument" value="default">Создать</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="exportDialog">
+    <form method="dialog" id="exportForm">
+      <h2>Экспорт изображения</h2>
+      <label>Формат <select id="exportFormat"><option value="png">PNG</option><option value="jpeg">JPG</option><option value="webp">WEBP</option></select></label>
+      <label>Качество <input id="exportQuality" type="range" min="10" max="100" value="92"></label>
+      <div class="dialog-actions"><button value="cancel">Отмена</button><button id="exportConfirm" value="default">Экспорт</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="settingsDialog" class="settings-dialog">
+    <div class="settings-window">
+      <header class="settings-header">
+        <div><h2>Настройки ImageShop</h2><p>Параметры применяются и сохраняются автоматически</p></div>
+        <button id="settingsClose" class="settings-close" aria-label="Закрыть настройки">×</button>
+      </header>
+      <div class="settings-search-wrap"><input id="settingsSearch" type="search" placeholder="Поиск настроек…"></div>
+      <div class="settings-layout">
+        <nav id="settingsNav" class="settings-nav" aria-label="Категории настроек"></nav>
+        <section id="settingsContent" class="settings-content"></section>
+      </div>
+      <footer class="settings-footer">
+        <button id="settingsReset" class="settings-secondary-button">Сбросить все настройки</button>
+        <span>Сохранение выполняется автоматически</span>
+      </footer>
+    </div>
+  </dialog>
+
+  <dialog id="welcomeDialog" class="welcome-dialog">
+    <h2>Добро пожаловать в ImageShop</h2>
+    <p>Создайте новый документ или откройте изображение, чтобы начать работу.</p>
+    <div class="dialog-actions">
+      <button id="welcomeOpen">Открыть изображение</button>
+      <button id="welcomeNew">Новый документ</button>
+      <button id="welcomeDismiss">Продолжить</button>
+    </div>
+  </dialog>
+
+  <dialog id="textEditorDialog" class="text-editor-dialog">
+    <form id="textEditorForm">
+      <header class="text-editor-header">
+        <div><h2>Редактор текста</h2><p>Предпросмотр обновляется при изменении параметров</p></div>
+        <button id="textEditorCancel" class="settings-close" type="button" aria-label="Отменить и закрыть">×</button>
+      </header>
+      <div class="text-preview-wrap">
+        <canvas id="textPreview" class="text-preview" width="720" height="250" aria-label="Предварительный просмотр текста"></canvas>
+      </div>
+      <div class="text-editor-controls">
+        <label class="text-control-wide">Текст
+          <textarea id="textValue" rows="4" placeholder="Введите текст…" autofocus></textarea>
+        </label>
+        <div class="text-control-grid">
+          <label>Шрифт
+            <select id="textFont">
+              <option>Arial</option><option>Verdana</option><option>Georgia</option>
+              <option>Tahoma</option><option value="Trebuchet MS">Trebuchet MS</option><option value="Courier New">Courier New</option>
+              <option>serif</option><option>sans-serif</option><option>monospace</option>
+            </select>
+          </label>
+          <label>Размер
+            <span class="text-size-control"><input id="textSize" type="number" min="1" max="500" value="48"><input id="textSizeRange" type="range" min="8" max="160" value="48"></span>
+          </label>
+          <label>Поворот <span class="text-rotation-control"><input id="textRotation" type="range" min="-180" max="180" value="0"><output id="textRotationValue">0°</output></span></label>
+          <label>Цвет <span class="text-color-control"><input id="textColor" type="color" value="#5b9cf5"><input id="textColorHex" type="text" value="#5B9CF5" maxlength="7" aria-label="HEX цвет"></span></label>
+          <fieldset class="text-style-control">
+            <legend>Начертание</legend>
+            <label><input id="textBold" type="checkbox"> Bold</label>
+            <label><input id="textItalic" type="checkbox"> Italic</label>
+            <label><input id="textUnderline" type="checkbox"> Underline</label>
+          </fieldset>
+          <label>Выравнивание
+            <select id="textAlign"><option value="left">По левому краю</option><option value="center">По центру</option><option value="right">По правому краю</option></select>
+          </label>
+        </div>
+      </div>
+      <footer class="dialog-actions text-editor-actions">
+        <button id="textEditorCancelFooter" type="button">Отмена</button>
+        <button id="textApply" type="submit">Применить</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog id="textEntryDialog" class="text-entry-dialog">
+    <form id="textEntryForm" method="dialog">
+      <h2 id="textEntryTitle">Добавить текст</h2>
+      <label id="textEntryLabel" for="textEntryValue">Текст <input id="textEntryValue" type="text" autocomplete="off"></label>
+      <div class="dialog-actions">
+        <button id="textEntryCancel" type="button">Отмена</button>
+        <button type="submit">Готово</button>
+      </div>
+    </form>
+  </dialog>
+
+  <input id="imageInput" type="file" accept="image/*" hidden>
+  <input id="projectInput" type="file" accept=".ishp,application/json" hidden>
+  <div id="notifications" aria-live="polite"></div>
+  <div id="contextMenu" class="context-menu"></div>
+
+  <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
